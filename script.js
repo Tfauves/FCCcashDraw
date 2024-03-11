@@ -1,14 +1,14 @@
-let price = 1.87;
-let cid = [
-  ["PENNY", 1.01],
-  ["NICKEL", 2.05],
-  ["DIME", 3.1],
-  ["QUARTER", 4.25],
-  ["ONE", 90],
-  ["FIVE", 55],
-  ["TEN", 20],
-  ["TWENTY", 60],
-  ["ONE HUNDRED", 100],
+const price = 19.5;
+const cid = [
+  ["PENNY", 0.5],
+  ["NICKEL", 0],
+  ["DIME", 0],
+  ["QUARTER", 0],
+  ["ONE", 0],
+  ["FIVE", 0],
+  ["TEN", 0],
+  ["TWENTY", 0],
+  ["ONE HUNDRED", 0],
 ];
 
 const cashInput = document.getElementById("cash");
@@ -28,10 +28,10 @@ const denominations = {
 };
 
 const checkChange = (price, cash, cid) => {
-  let change = cash - price;
+  let change = (cash - price) * 100; // Convert to cents for integer arithmetic
   let totalAvailable = cid.reduce(
     (sum, denomination) =>
-      sum + denomination[1] * denominations[denomination[0]],
+      sum + denomination[1] * denominations[denomination[0]] * 100,
     0
   );
 
@@ -43,8 +43,8 @@ const checkChange = (price, cash, cid) => {
 
   for (let i = cid.length - 1; i >= 0; i--) {
     const denomination = cid[i][0];
-    const availableAmount = cid[i][1];
-    const denominationValue = denominations[denomination];
+    const availableAmount = cid[i][1] * 100; // Convert to cents
+    const denominationValue = denominations[denomination] * 100; // Convert to cents
 
     let quantity = Math.floor(availableAmount / denominationValue);
     let returnedQuantity = Math.min(
@@ -54,18 +54,19 @@ const checkChange = (price, cash, cid) => {
     let returnedAmount = returnedQuantity * denominationValue;
 
     if (returnedQuantity > 0) {
-      changeDue.push([denomination, returnedAmount]);
+      changeDue.push([denomination, returnedAmount / 100]); // Convert back to dollars
       change -= returnedAmount;
-      change = parseFloat(change.toFixed(2));
     }
   }
 
-  if (change > 0) {
-    return { status: "INSUFFICIENT_FUNDS" };
-  } else if (Math.abs(totalAvailable - (cash - price)) < 0.0001) {
-    return { status: "CLOSED", change: cid.slice() };
+  if (change === 0) {
+    if (isDrawerEmpty(cid)) {
+      return { status: "CLOSED", change: cid.slice() };
+    } else {
+      return { status: "OPEN", change: changeDue };
+    }
   } else {
-    return { status: "OPEN", change: changeDue };
+    return { status: "INSUFFICIENT_FUNDS" };
   }
 };
 
