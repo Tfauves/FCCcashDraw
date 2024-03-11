@@ -29,7 +29,17 @@ const denominations = {
 
 const checkChange = (price, cash, cid) => {
   let change = cash - price;
+  let totalAvailable = cid.reduce(
+    (sum, denomination) =>
+      sum + denomination[1] * denominations[denomination[0]],
+    0
+  );
+
   let changeDue = [];
+
+  if (change > totalAvailable) {
+    return { status: "INSUFFICIENT_FUNDS" };
+  }
 
   for (let i = cid.length - 1; i >= 0; i--) {
     const denomination = cid[i][0];
@@ -46,21 +56,21 @@ const checkChange = (price, cash, cid) => {
     if (returnedQuantity > 0) {
       changeDue.push([denomination, returnedAmount]);
       change -= returnedAmount;
-      change = parseFloat(change.toFixed(2)); // Fix floating-point precision issues
+      change = parseFloat(change.toFixed(2));
     }
   }
 
   if (change > 0) {
     return { status: "INSUFFICIENT_FUNDS" };
-  } else if (change === 0 && isDrawerEmpty(cid)) {
-    return { status: "CLOSED", change: changeDue };
+  } else if (Math.abs(totalAvailable - (cash - price)) < 0.0001) {
+    return { status: "CLOSED", change: cid.slice() };
   } else {
     return { status: "OPEN", change: changeDue };
   }
 };
 
 const isDrawerEmpty = (cid) => {
-  return cid.every((denomination) => denomination[1] === 0);
+  return cid.every((denomination) => denomination[1] <= 0);
 };
 
 purchaseBtn.addEventListener("click", () => {
