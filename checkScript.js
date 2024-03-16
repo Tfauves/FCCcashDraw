@@ -19,28 +19,28 @@ const cashDrawerDisplay = document.getElementById("cash-drawer-display");
 
 const formatResults = (status, change) => {
   displayChangeDue.innerHTML = `<p>Status: ${status}</p>`;
-  change.forEach((money) => {
-    displayChangeDue.innerHTML += `<p>${money[0]}: $${money[1]}</p>`;
-  });
+  change.map(
+    (money) =>
+      (displayChangeDue.innerHTML += `<p>${money[0]}: $${money[1]}</p>`)
+  );
+  return;
 };
 
 const checkCashRegister = () => {
-  const cashValue = Number(cash.value);
-
-  if (cashValue < price) {
+  if (Number(cash.value) < price) {
     alert("Customer does not have enough money to purchase the item");
     cash.value = "";
     return;
   }
 
-  if (cashValue === price) {
+  if (Number(cash.value) === price) {
     displayChangeDue.innerHTML =
       "<p>No change due - customer paid with exact cash</p>";
     cash.value = "";
     return;
   }
 
-  let changeDue = cashValue - price;
+  let changeDue = Number(cash.value) - price;
   let reversedCid = [...cid].reverse();
   let denominations = [100, 20, 10, 5, 1, 0.25, 0.1, 0.05, 0.01];
   let result = { status: "OPEN", change: [] };
@@ -52,21 +52,20 @@ const checkCashRegister = () => {
   );
 
   if (totalCID < changeDue) {
-    displayChangeDue.innerHTML = "<p>Status: INSUFFICIENT_FUNDS</p>";
-    return;
+    return (displayChangeDue.innerHTML = "<p>Status: INSUFFICIENT_FUNDS</p>");
   }
 
   if (totalCID === changeDue) {
     result.status = "CLOSED";
   }
 
-  for (let i = 0; i < reversedCid.length; i++) {
+  for (let i = 0; i <= reversedCid.length; i++) {
     if (changeDue > denominations[i] && changeDue > 0) {
       let count = 0;
       let total = reversedCid[i][1];
       while (total > 0 && changeDue >= denominations[i]) {
         total -= denominations[i];
-        changeDue = parseFloat((changeDue - denominations[i]).toFixed(2));
+        changeDue = parseFloat((changeDue -= denominations[i]).toFixed(2));
         count++;
       }
       if (count > 0) {
@@ -75,8 +74,7 @@ const checkCashRegister = () => {
     }
   }
   if (changeDue > 0) {
-    displayChangeDue.innerHTML = "<p>Status: INSUFFICIENT_FUNDS</p>";
-    return;
+    return (displayChangeDue.innerHTML = "<p>Status: INSUFFICIENT_FUNDS</p>");
   }
 
   formatResults(result.status, result.change);
@@ -102,7 +100,7 @@ const updateUI = (change) => {
     TWENTY: "Twenties",
     "ONE HUNDRED": "Hundreds",
   };
-
+  // Update cid if change is passed in
   if (change) {
     change.forEach((changeArr) => {
       const targetArr = cid.find((cidArr) => cidArr[0] === changeArr[0]);
@@ -115,7 +113,7 @@ const updateUI = (change) => {
   cashDrawerDisplay.innerHTML = `<p><strong>Change in drawer:</strong></p>
     ${cid
       .map((money) => `<p>${currencyNameMap[money[0]]}: $${money[1]}</p>`)
-      .join("")}
+      .join("")}  
   `;
 };
 
